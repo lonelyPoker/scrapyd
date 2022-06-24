@@ -38,7 +38,7 @@ def application(config):
     http_port = config.getint('http_port', 6800)
     bind_address = config.get('bind_address', '127.0.0.1')
     poll_interval = config.getfloat('poll_interval', 5)
-
+    # NOTE 加载许多组件
     poller = QueuePoller(config)
     scheduler = SpiderScheduler(config)
     environment = Environment(config)
@@ -63,11 +63,13 @@ def application(config):
 
     webpath = config.get('webroot', 'scrapyd.website.Root')
     webcls = load_object(webpath)
+    # NOTE 不添加认证信息直接实例化生成resource对象
     resource = create_wrapped_resource(webcls, config, app)
     webservice = TCPServer(http_port, server.Site(resource), interface=bind_address)
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
 
+    # NOTE 将子服务注册到Application里面
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)
